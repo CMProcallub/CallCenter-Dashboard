@@ -31,6 +31,7 @@
 body {
   background:var(--bg); color:var(--text);
   font-family:'DM Sans',sans-serif;
+  font-size:16px;
   height:100vh; overflow:hidden;
 }
 
@@ -81,15 +82,15 @@ body {
 }
 .header h1 {
   font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(1.5rem,2.8vw,2.4rem); letter-spacing:.06em; color:var(--gold); line-height:1;
+  font-size:clamp(1.8rem,3.2vw,2.8rem); letter-spacing:.06em; color:var(--gold); line-height:1;
 }
-.header-meta { font-size:.72rem; color:var(--muted); margin-top:.12rem; }
+.header-meta { font-size:.88rem; color:var(--muted); margin-top:.12rem; }
 .header-right { display:flex; gap:.7rem; align-items:center; }
 .live-badge {
   display:flex; align-items:center; gap:.4rem;
   background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3);
   border-radius:100px; padding:.28rem .75rem;
-  font-size:.7rem; font-weight:600; color:var(--green); letter-spacing:.05em;
+  font-size:.82rem; font-weight:600; color:var(--green); letter-spacing:.05em;
 }
 .live-dot {
   width:7px; height:7px; background:var(--green); border-radius:50%;
@@ -99,10 +100,10 @@ body {
 .reload-btn {
   background:var(--surface2); border:1px solid var(--border);
   color:var(--silver); padding:.35rem .8rem; border-radius:7px;
-  cursor:pointer; font-size:.75rem; transition:all .2s;
+  cursor:pointer; font-size:.88rem; transition:all .2s;
 }
 .reload-btn:hover { border-color:var(--gold); color:var(--gold); }
-#refresh-countdown { font-size:.7rem; color:var(--muted); }
+#refresh-countdown { font-size:.82rem; color:var(--muted); }
 
 /* Grand banner */
 .grand-banner {
@@ -111,14 +112,14 @@ body {
   border:1px solid var(--gold); border-radius:11px;
   padding:.6rem 1.1rem; box-shadow:0 0 28px rgba(245,200,66,.06); flex-shrink:0;
 }
-.grand-label { font-family:'Bebas Neue',sans-serif; font-size:.8rem; letter-spacing:.14em; color:var(--muted); }
+.grand-label { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.14em; color:var(--muted); }
 .grand-value { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4.5vw,3.5rem); color:var(--gold); line-height:1; }
 .grand-vs { text-align:right; }
-.grand-vs .gl { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
-.grand-vs .gv { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; }
-.diff-up   { color:var(--green); font-size:.78rem; font-weight:600; }
-.diff-down { color:var(--red);   font-size:.78rem; font-weight:600; }
-.diff-zero { color:var(--muted); font-size:.78rem; }
+.grand-vs .gl { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+.grand-vs .gv { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; }
+.diff-up   { color:var(--green); font-size:.92rem; font-weight:600; }
+.diff-down { color:var(--red);   font-size:.92rem; font-weight:600; }
+.diff-zero { color:var(--muted); font-size:.92rem; }
 
 /* Dept cards */
 .team-row { display:grid; grid-template-columns:repeat(6,1fr); gap:.55rem; flex-shrink:0; }
@@ -135,9 +136,9 @@ body {
 .team-card:nth-child(4)::before{background:var(--c3)}
 .team-card:nth-child(5)::before{background:var(--c4)}
 .team-card:nth-child(6)::before{background:var(--c5)}
-.tc-lbl { font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.15rem; }
-.tc-val { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.4rem,2.2vw,2rem); line-height:1; }
-.tc-sub { font-size:.62rem; color:var(--muted); margin-top:.1rem; }
+.tc-lbl { font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.15rem; }
+.tc-val { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.6rem,2.5vw,2.3rem); line-height:1; }
+.tc-sub { font-size:.78rem; color:var(--muted); margin-top:.1rem; }
 
 /* Daily bar */
 .days-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:.5rem; flex-shrink:0; }
@@ -147,8 +148,8 @@ body {
   display:flex; align-items:center; justify-content:space-between;
 }
 .day-card.today { border-color:var(--gold); background:rgba(245,200,66,.05); }
-.day-label { font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-.day-val   { font-family:'Bebas Neue',sans-serif; font-size:1.35rem; line-height:1; }
+.day-label { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+.day-val   { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; line-height:1; }
 .day-card.today .day-label { color:var(--gold); }
 .day-card.today .day-val   { color:var(--gold); }
 
@@ -167,14 +168,14 @@ body {
 /* thead */
 .lb-table thead th {
   background:var(--surface2); color:var(--silver);
-  font-size:.6rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
-  padding:.38rem .28rem; text-align:center;
+  font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
+  padding:.42rem .32rem; text-align:center;
   border-bottom:1px solid var(--border);
   white-space:nowrap; position:sticky; top:0; z-index:10;
 }
 .lb-table thead tr:first-child th { border-bottom:1px solid rgba(255,255,255,.06); }
 /* Row 2: day sub-headers (Mon Tue Wed Thu Fri) get a slightly brighter base */
-.lb-table thead tr:last-child th { color:#8facc8; font-size:.62rem; }
+.lb-table thead tr:last-child th { color:#8facc8; font-size:.74rem; }
 .th-grp { border-left:2px solid var(--border) !important; }
 
 /* tbody */
@@ -186,14 +187,14 @@ body {
 
 .lb-table tbody td {
   padding:.34rem .28rem; text-align:center;
-  vertical-align:middle; white-space:nowrap; font-size:.72rem;
+  vertical-align:middle; white-space:nowrap; font-size:.85rem;
 }
 .td-grp { border-left:2px solid var(--border) !important; }
 
 /* Rank */
 .td-rank {
-  font-family:'Bebas Neue',sans-serif; font-size:1rem;
-  width:2.2rem; text-align:center;
+  font-family:'Bebas Neue',sans-serif; font-size:1.15rem;
+  width:2.4rem; text-align:center;
 }
 .rank-1 .td-rank{color:var(--gold)}
 .rank-2 .td-rank{color:var(--silver)}
@@ -201,8 +202,8 @@ body {
 
 /* Name */
 .td-name { text-align:left !important; padding-left:.55rem !important; width:130px; }
-.agent-name { font-weight:600; font-size:.78rem; }
-.agent-id   { font-size:.58rem; color:var(--muted); }
+.agent-name { font-weight:600; font-size:.95rem; }
+.agent-id   { font-size:.75rem; color:var(--muted); }
 .rank-1 .agent-name{color:var(--gold)}
 .rank-2 .agent-name{color:var(--silver)}
 .rank-3 .agent-name{color:var(--bronze)}
@@ -214,8 +215,8 @@ body {
 
 /* Grand total */
 .td-tot {
-  font-family:'Bebas Neue',sans-serif; font-size:1.15rem;
-  border-left:2px solid var(--border) !important; width:3.2rem;
+  font-family:'Bebas Neue',sans-serif; font-size:1.35rem;
+  border-left:2px solid var(--border) !important; width:3.6rem;
 }
 .rank-1 .td-tot{color:var(--gold)}
 
@@ -233,14 +234,14 @@ body {
 }
 .page-dot:hover  { background:var(--silver); }
 .page-dot.active { background:var(--gold); }
-.page-info { font-size:.65rem; color:var(--muted); white-space:nowrap; }
+.page-info { font-size:.82rem; color:var(--muted); white-space:nowrap; }
 
 /* Nav controls */
 .lb-controls { display:flex; align-items:center; gap:.45rem; }
 .ctrl-btn {
   background:var(--surface); border:1px solid var(--border);
   color:var(--silver); border-radius:6px;
-  padding:.28rem .55rem; font-size:.72rem; cursor:pointer;
+  padding:.32rem .65rem; font-size:.84rem; cursor:pointer;
   transition:all .18s; line-height:1; user-select:none;
 }
 .ctrl-btn:hover  { border-color:var(--gold); color:var(--gold); }
@@ -249,7 +250,7 @@ body {
 .speed-select {
   background:var(--surface); border:1px solid var(--border);
   color:var(--silver); border-radius:6px;
-  padding:.26rem .4rem; font-size:.7rem; cursor:pointer;
+  padding:.32rem .5rem; font-size:.82rem; cursor:pointer;
   font-family:inherit;
 }
 .speed-select:focus { outline:none; border-color:var(--gold); }
@@ -277,7 +278,7 @@ body {
   background:var(--surface); border-bottom:1px solid var(--border);
   padding:.28rem .75rem;
 }
-.ticker-controls .tc-lbl { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+.ticker-controls .tc-lbl { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
 .ticker-wrap {
   overflow:hidden; background:var(--surface2);
   padding:.28rem 0; white-space:nowrap;
@@ -288,7 +289,7 @@ body {
 }
 .ticker-inner.ticker-paused { animation-play-state:paused; }
 @keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
-.ticker-item { display:inline-block; margin-right:3rem; font-size:.75rem; color:var(--silver); }
+.ticker-item { display:inline-block; margin-right:3rem; font-size:.92rem; color:var(--silver); }
 .ticker-item strong { color:var(--gold); }
 
 /* dept colour helpers */
@@ -366,7 +367,7 @@ body {
           <option value="12000">12s</option>
           <option value="20000">20s</option>
         </select>
-        <span style="font-size:.62rem;color:var(--muted);margin-left:.3rem">Rows:</span>
+        <span style="font-size:.78rem;color:var(--muted);margin-left:.3rem">Rows:</span>
         <select class="speed-select" id="rows-select" title="Agents per page">
           <option value="8">8</option>
           <option value="10">10</option>
@@ -387,7 +388,7 @@ body {
       <button class="ctrl-btn" id="ticker-slower">&#8722; Slower</button>
       <button class="ctrl-btn active" id="ticker-playpause">&#9646;&#9646; Pause</button>
       <button class="ctrl-btn" id="ticker-faster">&#43; Faster</button>
-      <span id="ticker-speed-label" style="font-size:.65rem;color:var(--muted);min-width:3.5rem">35s</span>
+      <span id="ticker-speed-label" style="font-size:.8rem;color:var(--muted);min-width:3.5rem">35s</span>
     </div>
     <div class="ticker-wrap">
       <div class="ticker-inner" id="ticker"></div>
