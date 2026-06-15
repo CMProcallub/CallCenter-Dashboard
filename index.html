@@ -140,7 +140,7 @@ body {
 .tc-sub { font-size:.62rem; color:var(--muted); margin-top:.1rem; }
 
 /* Daily bar */
-.days-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:.5rem; flex-shrink:0; }
+.days-bar { display:grid; grid-template-columns:repeat(6,1fr); gap:.5rem; flex-shrink:0; }
 .day-card {
   background:#ffffff; border:1px solid #c8d6e5;
   border-radius:7px; padding:.45rem .7rem; box-shadow:0 1px 3px rgba(0,0,0,.05);
@@ -368,11 +368,12 @@ body {
         </select>
         <span style="font-size:.62rem;color:var(--muted);margin-left:.3rem">Rows:</span>
         <select class="speed-select" id="rows-select" title="Agents per page">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
           <option value="8">8</option>
           <option value="10">10</option>
-          <option value="12" selected>12</option>
-          <option value="15">15</option>
-          <option value="20">20</option>
         </select>
         <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
       </div>
@@ -407,18 +408,18 @@ body {
 // Daily Totals:    cols 32–36  (Mon–Fri, all depts summed)
 // Grand Total:     col  37
 
-const DEPT_STARTS     = [2, 7, 12, 17, 22, 27];
-const DAILY_TOT_START = 32;
-const GRAND_COL       = 37;
+const DEPT_STARTS     = [2, 8, 14, 20, 26, 32];
+const DAILY_TOT_START = 38;
+const GRAND_COL       = 44;
 
-const DAYS  = ['Mon','Tue','Wed','Thu','Fri'];
+const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat'];
 const DEPTS = ['COM Winbacks','Resi Winbacks','Retention','Residential','Cust Svc','Commercial'];
 const DEPT_VARS = ['--c0','--c1','--c2','--c3','--c4','--c5'];
 const CC    = ['cc0','cc1','cc2','cc3','cc4','cc5'];
 
 const TARGET_SHEETS = ['COM Winbacks','Resi Winbacks','Retention','Residential','Customer Service','Commercial'];
 
-let agentsPerPage = 12;
+let agentsPerPage = 5;
 const REFRESH_SEC     = 60;
 
 let lastFile        = null;
@@ -450,7 +451,7 @@ function parseSheet(ws) {
       dayTotals = [0,1,2,3,4].map(d => num(r[2+d]));
       deptTotal = num(r[8]) || dayTotals.reduce((a,b)=>a+b,0);
     }
-    if (r[1] === 'Last Week') lastWk = num(r[8]);
+    if (r[1] === 'Last Week') lastWk = num(r[9]);
   }
   return { deptTotal, dayTotals, lastWk };
 }
@@ -471,10 +472,10 @@ function parseDashboard(ws) {
     if (String(r[1]).trim().toUpperCase() === 'TOTAL') break;
 
     // 6 depts × 5 days
-    const deptDays = DEPT_STARTS.map(s => [0,1,2,3,4].map(d => num(r[s+d])));
+    const deptDays = DEPT_STARTS.map(s => [0,1,2,3,4,5].map(d => num(r[s+d])));
 
     // Daily totals (cols 32–36)
-    const dailyTots = [0,1,2,3,4].map(d => num(r[DAILY_TOT_START+d]));
+    const dailyTots = [0,1,2,3,4,5].map(d => num(r[DAILY_TOT_START+d]));
 
     // Grand total (col 37)
     const grand = num(r[GRAND_COL]) || deptDays.flat().reduce((a,b)=>a+b,0);
@@ -508,7 +509,7 @@ function buildHeader() {
 
   // Row 2: Mon–Fri under each group (7 groups = 35 day sub-cols)
   let r2 = `<tr>`;
-  for (let g = 0; g < 7; g++) {
+  for (let g = 0; g < 7; g++) {  // 6 depts + daily totals = 7 groups
     DAYS.forEach((day, di) => {
       const borderL = di === 0 ? 'th-grp' : '';
       const hiColor = di === todayIdx ? 'color:var(--gold)' : '';
@@ -727,7 +728,7 @@ function reloadFile() {
 function buildDashboard(wb) {
   // Today
   const dow = new Date().getDay();
-  todayIdx  = (dow >= 1 && dow <= 5) ? dow - 1 : -1;
+  todayIdx  = (dow >= 1 && dow <= 6) ? dow - 1 : -1;
 
   // Dept sheet totals
   let grandTotal = 0, grandLastWk = 0;
