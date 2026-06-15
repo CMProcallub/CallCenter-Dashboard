@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call Center Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:      #f0f4f8;
+  --surface: #ffffff;
+  --surface2:#e8eef5;
+  --border:  #c8d6e5;
+  --gold:    #1a56db;
+  --gold2:   #1648c8;
+  --silver:  #374151;
+  --bronze:  #b45309;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --text:    #111827;
+  --muted:   #6b7280;
+  --c0: #2563eb;
+  --c1: #7c3aed;
+  --c2: #db2777;
+  --c3: #0d9488;
+  --c4: #ea6c00;
+  --c5: #65a30d;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  height:100vh; overflow:hidden;
+}
+
+/* ── UPLOAD SCREEN ── */
+#upload-screen {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; height:100vh; gap:2rem; padding:2rem;
+  background:var(--bg);
+}
+#upload-screen h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,8vw,6rem); letter-spacing:.06em;
+  color:#1a56db; text-align:center; line-height:1;
+}
+#upload-screen > p { color:var(--silver); font-size:1.1rem; text-align:center; max-width:480px; }
+#drop-zone {
+  width:min(520px,90vw); border:2px dashed #c8d6e5; border-radius:16px;
+  padding:3.5rem 2rem; text-align:center; cursor:pointer;
+  transition:all .3s; background:#ffffff;
+}
+#drop-zone:hover, #drop-zone.drag-over {
+  border-color:var(--gold); background:var(--surface2);
+  transform:translateY(-2px); box-shadow:0 0 40px rgba(245,200,66,.1);
+}
+#drop-zone .icon { font-size:3.5rem; margin-bottom:1rem; }
+#drop-zone h2 { font-size:1.3rem; font-weight:600; margin-bottom:.5rem; }
+#drop-zone p  { color:var(--muted); font-size:.9rem; }
+#file-input   { display:none; }
+.btn {
+  background:var(--gold); color:#000; border:none;
+  padding:.75rem 2rem; font-family:'Bebas Neue',sans-serif;
+  font-size:1.2rem; letter-spacing:.08em; border-radius:8px;
+  cursor:pointer; transition:all .2s; margin-top:1.2rem;
+}
+.btn:hover { background:var(--gold2); transform:translateY(-1px); }
+
+/* ── DASHBOARD ── */
+#dashboard {
+  height:100vh; padding:1rem 1.2rem .6rem;
+  display:none; flex-direction:column; gap:.65rem;
+  background:var(--bg);
+}
+
+/* Header */
+.header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:.55rem; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.header h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(1.5rem,2.8vw,2.4rem); letter-spacing:.06em; color:#1a56db; line-height:1;
+}
+.header-meta { font-size:.72rem; color:var(--muted); margin-top:.12rem; }
+.header-right { display:flex; gap:.7rem; align-items:center; }
+.live-badge {
+  display:flex; align-items:center; gap:.4rem;
+  background:rgba(22,163,74,.1); border:1px solid rgba(22,163,74,.4);
+  border-radius:100px; padding:.28rem .75rem;
+  font-size:.7rem; font-weight:600; color:var(--green); letter-spacing:.05em;
+}
+.live-dot {
+  width:7px; height:7px; background:var(--green); border-radius:50%;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.reload-btn {
+  background:#ffffff; border:1px solid var(--border);
+  color:#374151; padding:.35rem .8rem; border-radius:7px;
+  cursor:pointer; font-size:.75rem; transition:all .2s;
+}
+.reload-btn:hover { border-color:#1a56db; color:#1a56db; }
+#refresh-countdown { font-size:.7rem; color:var(--muted); }
+
+/* Grand banner */
+.grand-banner {
+  display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(135deg,#ffffff 0%,#eef4fb 100%);
+  border:2px solid #1a56db; border-radius:11px;
+  padding:.6rem 1.1rem; box-shadow:0 2px 12px rgba(26,86,219,.10); flex-shrink:0;
+}
+.grand-label { font-family:'Bebas Neue',sans-serif; font-size:.8rem; letter-spacing:.14em; color:#374151; }
+.grand-value { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4.5vw,3.5rem); color:#1a56db; line-height:1; }
+.grand-vs { text-align:right; }
+.grand-vs .gl { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+.grand-vs .gv { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; }
+.diff-up   { color:var(--green); font-size:.78rem; font-weight:600; }
+.diff-down { color:var(--red);   font-size:.78rem; font-weight:600; }
+.diff-zero { color:var(--muted); font-size:.78rem; }
+
+/* Dept cards */
+.team-row { display:grid; grid-template-columns:repeat(6,1fr); gap:.55rem; flex-shrink:0; }
+.team-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:9px; padding:.55rem .8rem; position:relative; overflow:hidden;
+}
+.team-card::before {
+  content:''; position:absolute; top:0;left:0;right:0; height:3px;
+}
+.team-card:nth-child(1)::before{background:var(--c0)}
+.team-card:nth-child(2)::before{background:var(--c1)}
+.team-card:nth-child(3)::before{background:var(--c2)}
+.team-card:nth-child(4)::before{background:var(--c3)}
+.team-card:nth-child(5)::before{background:var(--c4)}
+.team-card:nth-child(6)::before{background:var(--c5)}
+.tc-lbl { font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.15rem; }
+.tc-val { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.4rem,2.2vw,2rem); line-height:1; }
+.tc-sub { font-size:.62rem; color:var(--muted); margin-top:.1rem; }
+
+/* Daily bar */
+.days-bar { display:grid; grid-template-columns:repeat(6,1fr); gap:.5rem; flex-shrink:0; }
+.day-card {
+  background:#ffffff; border:1px solid #c8d6e5;
+  border-radius:7px; padding:.45rem .7rem; box-shadow:0 1px 3px rgba(0,0,0,.05);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.day-card.today { border-color:var(--gold); background:rgba(245,200,66,.05); }
+.day-label { font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+.day-val   { font-family:'Bebas Neue',sans-serif; font-size:1.35rem; line-height:1; }
+.day-card.today .day-label { color:var(--gold); }
+.day-card.today .day-val   { color:var(--gold); }
+
+/* ── LEADERBOARD TABLE ── */
+.lb-wrap {
+  flex:1; display:flex; flex-direction:column;
+  background:#ffffff; border:1px solid #c8d6e5;
+  border-radius:11px; overflow:hidden; min-height:0; box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+.lb-scroll { flex:1; overflow:auto; }
+.lb-table {
+  width:100%; border-collapse:collapse;
+  table-layout:fixed;
+}
+
+/* thead */
+.lb-table thead th {
+  background:#1a56db; color:#ffffff;
+  font-size:.6rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
+  padding:.38rem .28rem; text-align:center;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap; position:sticky; top:0; z-index:10;
+}
+.lb-table thead tr:first-child th { border-bottom:1px solid rgba(255,255,255,.06); }
+/* Row 2: day sub-headers (Mon Tue Wed Thu Fri) get a slightly brighter base */
+.lb-table thead tr:last-child th { color:#dbeafe; font-size:.62rem; }
+.th-grp { border-left:2px solid var(--border) !important; }
+
+/* tbody */
+.lb-table tbody tr { border-bottom:1px solid #e2e8f0; transition:background .15s; }
+.lb-table tbody tr:hover { background:rgba(37,99,235,.06); }
+.lb-table tbody tr.rank-1 { background:rgba(255,215,0,.12); }
+.lb-table tbody tr.rank-2 { background:rgba(156,163,175,.08); }
+.lb-table tbody tr.rank-3 { background:rgba(180,83,9,.06); }
+
+.lb-table tbody td {
+  padding:.34rem .28rem; text-align:center;
+  vertical-align:middle; white-space:nowrap; font-size:.72rem;
+}
+.td-grp { border-left:2px solid var(--border) !important; }
+
+/* Rank */
+.td-rank {
+  font-family:'Bebas Neue',sans-serif; font-size:1rem;
+  width:2.2rem; text-align:center;
+}
+.rank-1 .td-rank{color:var(--gold)}
+.rank-2 .td-rank{color:var(--silver)}
+.rank-3 .td-rank{color:var(--bronze)}
+
+/* Name */
+.td-name { text-align:left !important; padding-left:.55rem !important; width:130px; }
+.agent-name { font-weight:600; font-size:.78rem; }
+.agent-id   { font-size:.58rem; color:var(--muted); }
+.rank-1 .agent-name{color:#b45309}
+.rank-2 .agent-name{color:var(--silver)}
+.rank-3 .agent-name{color:var(--bronze)}
+
+/* Day value */
+.td-v { width:2rem; color:var(--text); }
+.td-v.zero { color:var(--muted); opacity:.45; }
+.td-v.hi   { font-weight:700; }
+
+/* Grand total */
+.td-tot {
+  font-family:'Bebas Neue',sans-serif; font-size:1.15rem;
+  border-left:2px solid var(--border) !important; width:3.2rem;
+}
+.rank-1 .td-tot{color:#1a56db}
+
+/* Footer */
+.lb-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:.6rem;
+  padding:.38rem .85rem; background:#e8eef5;
+  border-top:1px solid var(--border); flex-shrink:0;
+}
+.page-dots { display:flex; gap:.38rem; align-items:center; }
+.page-dot  {
+  width:7px; height:7px; border-radius:50%;
+  background:#c8d6e5; transition:background .3s; cursor:pointer;
+}
+.page-dot:hover  { background:var(--silver); }
+.page-dot.active { background:var(--gold); }
+.page-info { font-size:.65rem; color:var(--muted); white-space:nowrap; }
+
+/* Nav controls */
+.lb-controls { display:flex; align-items:center; gap:.45rem; }
+.ctrl-btn {
+  background:#ffffff; border:1px solid var(--border);
+  color:#374151; border-radius:6px;
+  padding:.28rem .55rem; font-size:.72rem; cursor:pointer;
+  transition:all .18s; line-height:1; user-select:none;
+}
+.ctrl-btn:hover  { border-color:var(--gold); color:var(--gold); background:#eff6ff; }
+.ctrl-btn.active { background:rgba(26,86,219,.12); border-color:var(--gold); color:var(--gold); }
+
+.speed-select {
+  background:#ffffff; border:1px solid var(--border);
+  color:#374151; border-radius:6px;
+  padding:.26rem .4rem; font-size:.7rem; cursor:pointer;
+  font-family:inherit;
+}
+.speed-select:focus { outline:none; border-color:var(--gold); }
+
+/* Progress bar */
+.progress-wrap {
+  flex:1; height:3px; background:var(--border); border-radius:2px; overflow:hidden;
+  min-width:40px;
+}
+.progress-bar {
+  height:100%; background:var(--gold); border-radius:2px;
+  width:0%; transition:width .9s linear;
+}
+
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(8px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+.lb-table tbody { animation:fadeUp .35s ease; }
+
+/* Ticker */
+.ticker-outer { flex-shrink:0; border-radius:6px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.07); }
+.ticker-controls {
+  display:flex; align-items:center; gap:.5rem;
+  background:#f8fafc; border-bottom:1px solid #c8d6e5;
+  padding:.28rem .75rem;
+}
+.ticker-controls .tc-lbl { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+.ticker-wrap {
+  overflow:hidden; background:#1a56db;
+  padding:.28rem 0; white-space:nowrap;
+}
+.ticker-inner {
+  display:inline-block;
+  animation:ticker var(--ticker-dur,35s) linear infinite;
+}
+.ticker-inner.ticker-paused { animation-play-state:paused; }
+@keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+.ticker-item { display:inline-block; margin-right:3rem; font-size:.75rem; color:#ffffff; }
+.ticker-item strong { color:#fde68a; }
+
+/* dept colour helpers */
+.cc0{color:var(--c0)}.cc1{color:var(--c1)}.cc2{color:var(--c2)}
+.cc3{color:var(--c3)}.cc4{color:var(--c4)}.cc5{color:var(--c5)}
+</style>
+</head>
+<body>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <h1>Call Center<br>Sales Dashboard</h1>
+  <p>Drop your Day_Stat_Template.xlsx here to load the latest stats onto the TV.</p>
+  <div id="drop-zone">
+    <div class="icon">📊</div>
+    <h2>Drop your Excel file here</h2>
+    <p>or click to browse</p>
+    <button class="btn" onclick="resetAndOpen()">Choose File</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>⚡ Sales Leaderboard</h1>
+      <div class="header-meta" id="file-label">Weekly Performance Dashboard</div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+      <span id="refresh-countdown"></span>
+      <button class="reload-btn" onclick="resetAndOpen()">↺ Load New File</button>
+    </div>
+  </div>
+
+  <!-- Grand Total -->
+  <div class="grand-banner">
+    <div>
+      <div class="grand-label">🏆 Grand Total — Week to Date</div>
+      <div class="grand-value" id="grand-total">—</div>
+    </div>
+    <div class="grand-vs">
+      <div class="gl">Last Week</div>
+      <div class="gv" id="last-week-total">—</div>
+      <div id="week-diff">—</div>
+    </div>
+  </div>
+
+  <!-- Dept Cards -->
+  <div class="team-row" id="team-row"></div>
+
+  <!-- Daily Bar -->
+  <div class="days-bar" id="days-bar"></div>
+
+  <!-- Leaderboard -->
+  <div class="lb-wrap">
+    <div class="lb-scroll">
+      <table class="lb-table">
+        <thead id="lb-head"></thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+    <div class="lb-footer">
+      <div class="page-dots" id="page-dots"></div>
+      <div class="lb-controls">
+        <button class="ctrl-btn" id="btn-prev">&#9664; Prev</button>
+        <button class="ctrl-btn active" id="btn-playpause">&#9646;&#9646; Pause</button>
+        <button class="ctrl-btn" id="btn-next">Next &#9654;</button>
+        <select class="speed-select" id="speed-select">
+          <option value="5000">5s</option>
+          <option value="8000" selected>8s</option>
+          <option value="12000">12s</option>
+          <option value="20000">20s</option>
+        </select>
+        <span style="font-size:.62rem;color:var(--muted);margin-left:.3rem">Rows:</span>
+        <select class="speed-select" id="rows-select" title="Agents per page">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">10</option>
+        </select>
+        <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+      <div class="page-info" id="page-info"></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker-outer">
+    <div class="ticker-controls">
+      <span class="tc-lbl">&#9654; Ticker</span>
+      <button class="ctrl-btn" id="ticker-slower">&#8722; Slower</button>
+      <button class="ctrl-btn active" id="ticker-playpause">&#9646;&#9646; Pause</button>
+      <button class="ctrl-btn" id="ticker-faster">&#43; Faster</button>
+      <span id="ticker-speed-label" style="font-size:.65rem;color:var(--muted);min-width:3.5rem">35s</span>
+    </div>
+    <div class="ticker-wrap">
+      <div class="ticker-inner" id="ticker"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Column map (0-indexed, confirmed from spreadsheet) ──────────────────────
+// Col 0 = Rep #   Col 1 = Rep Name
+// COM Winbacks:    cols  2– 6  (Mon–Fri)
+// Resi Winbacks:   cols  7–11
+// Retention:       cols 12–16
+// Residential:     cols 17–21
+// Customer Svc:    cols 22–26
+// Commercial:      cols 27–31
+// Daily Totals:    cols 32–36  (Mon–Fri, all depts summed)
+// Grand Total:     col  37
+
+const DEPT_STARTS     = [2, 8, 14, 20, 26, 32];
+const DAILY_TOT_START = 38;
+const GRAND_COL       = 44;
+
+const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+const DEPTS = ['COM Winbacks','Resi Winbacks','Retention','Residential','Cust Svc','Commercial'];
+const DEPT_VARS = ['--c0','--c1','--c2','--c3','--c4','--c5'];
+const CC    = ['cc0','cc1','cc2','cc3','cc4','cc5'];
+
+const TARGET_SHEETS = ['COM Winbacks','Resi Winbacks','Retention','Residential','Customer Service','Commercial'];
+
+let agentsPerPage = 5;
+const REFRESH_SEC     = 60;
+
+let lastFile        = null;
+let agentsSorted    = [];
+let currentPage     = 0;
+let totalPages      = 1;
+let cycleTimer      = null;
+let refreshTimer    = null;
+let refreshCount    = REFRESH_SEC;
+let todayIdx        = -1;
+
+// ── Utilities ────────────────────────────────────────────────────────────────
+const num  = v => (typeof v === 'number' ? v : 0);
+const dCls = d => d > 0 ? 'diff-up' : d < 0 ? 'diff-down' : 'diff-zero';
+const dLbl = d => (d > 0 ? '▲ +' : d < 0 ? '▼ ' : '— ') + d;
+
+function resetAndOpen() {
+  const fi = document.getElementById('file-input');
+  fi.value = ''; fi.click();
+}
+
+// ── Parse individual dept sheet for totals row ───────────────────────────────
+function parseSheet(ws) {
+  const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  let deptTotal = 0, dayTotals = [0,0,0,0,0], lastWk = 0;
+  for (let i = raw.length - 1; i >= 0; i--) {
+    const r = raw[i];
+    if (r[1] === 'Total') {
+      dayTotals = [0,1,2,3,4].map(d => num(r[2+d]));
+      deptTotal = num(r[8]) || dayTotals.reduce((a,b)=>a+b,0);
+    }
+    if (r[1] === 'Last Week') lastWk = num(r[9]);
+  }
+  return { deptTotal, dayTotals, lastWk };
+}
+
+// ── Parse Dashboard sheet → sorted agent list ────────────────────────────────
+function parseDashboard(ws) {
+  const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  let hdr = -1;
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i][0] === 'Rep #' && raw[i][1] === 'Rep Name') { hdr = i; break; }
+  }
+  if (hdr < 0) return [];
+
+  const agents = [];
+  for (let i = hdr + 2; i < raw.length; i++) {
+    const r = raw[i];
+    if (!r[0] || isNaN(r[0]) || !r[1]) continue;
+    if (String(r[1]).trim().toUpperCase() === 'TOTAL') break;
+
+    // 6 depts × 5 days
+    const deptDays = DEPT_STARTS.map(s => [0,1,2,3,4,5].map(d => num(r[s+d])));
+
+    // Daily totals (cols 32–36)
+    const dailyTots = [0,1,2,3,4,5].map(d => num(r[DAILY_TOT_START+d]));
+
+    // Grand total (col 37)
+    const grand = num(r[GRAND_COL]) || deptDays.flat().reduce((a,b)=>a+b,0);
+
+    agents.push({
+      id:   r[0],
+      name: String(r[1]).replace(/\s*\(.*?\)/g,'').trim(),
+      deptDays,
+      dailyTots,
+      grand
+    });
+  }
+  return agents;
+}
+
+// ── Build sticky header ──────────────────────────────────────────────────────
+function buildHeader() {
+  // Row 1: group labels spanning 5 cols each
+  let r1 = `<tr>
+    <th rowspan="2" style="width:2.2rem">Rank</th>
+    <th rowspan="2" style="text-align:left;padding-left:.55rem;width:130px">Agent</th>`;
+  DEPTS.forEach((d,i) => {
+    r1 += `<th colspan="6" class="th-grp" style="color:var(${DEPT_VARS[i]})">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
+        background:var(${DEPT_VARS[i]});margin-right:3px;vertical-align:middle"></span>${d}
+    </th>`;
+  });
+  r1 += `<th colspan="6" class="th-grp" style="color:var(--silver)">Daily Totals</th>`;
+  r1 += `<th rowspan="2" class="th-grp" style="color:var(--gold);width:3.2rem">Total</th>`;
+  r1 += `</tr>`;
+
+  // Row 2: Mon–Fri under each group (7 groups = 35 day sub-cols)
+  let r2 = `<tr>`;
+  for (let g = 0; g < 7; g++) {  // 6 depts + daily totals = 7 groups
+    DAYS.forEach((day, di) => {
+      const borderL = di === 0 ? 'th-grp' : '';
+      const hiColor = di === todayIdx ? 'color:var(--gold)' : '';
+      r2 += `<th class="${borderL}" style="${hiColor};width:2rem">${day}</th>`;
+    });
+  }
+  r2 += `</tr>`;
+
+  document.getElementById('lb-head').innerHTML = r1 + r2;
+}
+
+// ── Render one page of agent rows ────────────────────────────────────────────
+function renderPage(page) {
+  currentPage = page;
+  const start = page * agentsPerPage;
+  const slice = agentsSorted.slice(start, start + agentsPerPage);
+
+  const rows = slice.map((a, ri) => {
+    const rank      = start + ri + 1;
+    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    const medal     = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+
+    // 6 dept groups × 5 days
+    let deptCells = '';
+    a.deptDays.forEach((days, di) => {
+      days.forEach((v, dayI) => {
+        const grpBorder = dayI === 0 ? 'td-grp' : '';
+        const todayCls  = dayI === todayIdx ? 'hi' : '';
+        const zeroCls   = v === 0 ? 'zero' : CC[di];
+        const todayStyle= dayI === todayIdx ? `color:var(${DEPT_VARS[di]});font-weight:700` : '';
+        deptCells += `<td class="td-v ${grpBorder} ${todayCls} ${zeroCls}" style="${todayStyle}">${v > 0 ? v : '—'}</td>`;
+      });
+    });
+
+    // Daily total group × 5 days
+    let dailyCells = '';
+    a.dailyTots.forEach((v, dayI) => {
+      const grpBorder  = dayI === 0 ? 'td-grp' : '';
+      const isToday    = dayI === todayIdx;
+      const style      = isToday ? 'color:var(--gold);font-weight:700' : 'color:var(--silver)';
+      dailyCells += `<td class="td-v ${grpBorder}" style="${style}">${v > 0 ? v : '—'}</td>`;
+    });
+
+    return `<tr class="${rankClass}">
+      <td class="td-rank">${medal}</td>
+      <td class="td-name">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-id">#${a.id}</div>
+      </td>
+      ${deptCells}
+      ${dailyCells}
+      <td class="td-tot">${a.grand}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('lb-body').innerHTML = rows;
+
+  // Page dots (clickable)
+  document.getElementById('page-dots').innerHTML =
+    Array.from({length:totalPages}, (_,i) =>
+      `<div class="page-dot ${i===page?'active':''}" onclick="goToPage(${i})"></div>`
+    ).join('');
+
+  document.getElementById('page-info').textContent =
+    `Showing ${start+1}–${Math.min(start+slice.length, agentsSorted.length)} of ${agentsSorted.length} agents  •  Page ${page+1} of ${totalPages}`;
+}
+
+// ── Page cycling & controls ───────────────────────────────────────────────────
+let isPlaying    = true;
+let dwellMs      = 8000;
+let progressStart= null;
+let progressRAF  = null;
+
+function startCycling() {
+  clearInterval(cycleTimer);
+  cancelAnimationFrame(progressRAF);
+  resetProgressBar();
+  if (!isPlaying || totalPages <= 1) return;
+  animateProgress();
+  cycleTimer = setInterval(() => {
+    renderPage((currentPage + 1) % totalPages);
+    resetProgressBar();
+    animateProgress();
+  }, dwellMs);
+}
+
+function resetProgressBar() {
+  cancelAnimationFrame(progressRAF);
+  const bar = document.getElementById('progress-bar');
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
+  progressStart = null;
+}
+
+function animateProgress() {
+  if (!isPlaying || totalPages <= 1) return;
+  const bar = document.getElementById('progress-bar');
+  if (!bar) return;
+  // Force reflow then animate
+  bar.getBoundingClientRect();
+  bar.style.transition = `width ${dwellMs}ms linear`;
+  bar.style.width = '100%';
+}
+
+function setPlaying(play) {
+  isPlaying = play;
+  const btn = document.getElementById('btn-playpause');
+  if (btn) {
+    btn.textContent = play ? '⏸ Pause' : '▶ Play';
+    btn.classList.toggle('active', play);
+  }
+  if (play) {
+    startCycling();
+  } else {
+    clearInterval(cycleTimer);
+    resetProgressBar();
+  }
+}
+
+// Wire up controls after dashboard is shown
+function wireControls() {
+  document.getElementById('btn-prev').onclick = () => {
+    const prev = (currentPage - 1 + totalPages) % totalPages;
+    renderPage(prev);
+    if (isPlaying) { clearInterval(cycleTimer); resetProgressBar(); startCycling(); }
+  };
+
+  document.getElementById('btn-next').onclick = () => {
+    renderPage((currentPage + 1) % totalPages);
+    if (isPlaying) { clearInterval(cycleTimer); resetProgressBar(); startCycling(); }
+  };
+
+  document.getElementById('btn-playpause').onclick = () => setPlaying(!isPlaying);
+
+  document.getElementById('speed-select').onchange = e => {
+    dwellMs = parseInt(e.target.value);
+    if (isPlaying) startCycling();
+  };
+
+  document.getElementById('rows-select').onchange = e => {
+    agentsPerPage = parseInt(e.target.value);
+    totalPages  = Math.max(1, Math.ceil(agentsSorted.length / agentsPerPage));
+    currentPage = 0;
+    renderPage(0);
+    if (isPlaying) startCycling();
+  };
+}
+
+function goToPage(page) {
+  renderPage(page);
+  if (isPlaying) { clearInterval(cycleTimer); resetProgressBar(); startCycling(); }
+}
+
+
+// ── Ticker controls ───────────────────────────────────────────────────────────
+let tickerDur     = 35;
+let tickerPlaying = true;
+
+function applyTickerSpeed() {
+  const wrap  = document.getElementById('ticker');
+  const lbl   = document.getElementById('ticker-speed-label');
+  if (!wrap) return;
+  // Restart animation by replacing node (resets CSS animation)
+  const clone = wrap.cloneNode(true);
+  if (!tickerPlaying) clone.classList.add('ticker-paused');
+  wrap.parentNode.replaceChild(clone, wrap);
+  document.documentElement.style.setProperty('--ticker-dur', tickerDur + 's');
+  if (lbl) lbl.textContent = tickerDur + 's';
+}
+
+function wireTickerControls() {
+  document.getElementById('ticker-slower').onclick = () => {
+    tickerDur = Math.min(tickerDur + 10, 120);
+    applyTickerSpeed();
+  };
+  document.getElementById('ticker-faster').onclick = () => {
+    tickerDur = Math.max(tickerDur - 10, 5);
+    applyTickerSpeed();
+  };
+  document.getElementById('ticker-playpause').onclick = () => {
+    tickerPlaying = !tickerPlaying;
+    const btn = document.getElementById('ticker-playpause');
+    btn.innerHTML    = tickerPlaying ? '&#9646;&#9646; Pause' : '&#9654; Play';
+    btn.classList.toggle('active', tickerPlaying);
+    const inner = document.getElementById('ticker');
+    if (inner) inner.classList.toggle('ticker-paused', !tickerPlaying);
+  };
+}
+
+
+function startRefreshCountdown() {
+  clearInterval(refreshTimer);
+  refreshCount = REFRESH_SEC;
+  updateCountdown();
+  refreshTimer = setInterval(() => {
+    refreshCount--;
+    updateCountdown();
+    if (refreshCount <= 0) { refreshCount = REFRESH_SEC; if (lastFile) reloadFile(); }
+  }, 1000);
+}
+
+function updateCountdown() {
+  const el = document.getElementById('refresh-countdown');
+  if (el) el.textContent = `Auto-refresh in ${refreshCount}s`;
+}
+
+function reloadFile() {
+  if (!lastFile) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    buildDashboard(XLSX.read(new Uint8Array(e.target.result), { type:'array' }));
+  };
+  reader.readAsArrayBuffer(lastFile);
+}
+
+// ── Main build ───────────────────────────────────────────────────────────────
+function buildDashboard(wb) {
+  // Today
+  const dow = new Date().getDay();
+  todayIdx  = (dow >= 1 && dow <= 6) ? dow - 1 : -1;
+
+  // Dept sheet totals
+  let grandTotal = 0, grandLastWk = 0;
+  const grandDays = [0,0,0,0,0];
+  const deptData  = TARGET_SHEETS.map((name, i) => {
+    const ws = wb.Sheets[name];
+    if (!ws) return { name:DEPTS[i], deptTotal:0, dayTotals:[0,0,0,0,0], lastWk:0 };
+    const d = parseSheet(ws);
+    grandTotal  += d.deptTotal;
+    grandLastWk += d.lastWk;
+    d.dayTotals.forEach((v,j) => grandDays[j] += v);
+    return { name:DEPTS[i], ...d };
+  });
+
+  // Grand banner
+  document.getElementById('grand-total').textContent      = grandTotal;
+  document.getElementById('last-week-total').textContent  = grandLastWk;
+  const wd = grandTotal - grandLastWk;
+  const wdEl = document.getElementById('week-diff');
+  wdEl.textContent = dLbl(wd) + ' vs last week';
+  wdEl.className   = dCls(wd);
+
+  // Dept cards
+  document.getElementById('team-row').innerHTML = deptData.map((d,i) => {
+    const df = d.deptTotal - d.lastWk;
+    return `<div class="team-card">
+      <div class="tc-lbl">${d.name}</div>
+      <div class="tc-val cc${i}">${d.deptTotal}</div>
+      <div class="tc-sub">Last wk: ${d.lastWk}</div>
+      <div class="${dCls(df)}">${dLbl(df)}</div>
+    </div>`;
+  }).join('');
+
+  // Daily bar
+  const maxDay = Math.max(...grandDays, 1);
+  document.getElementById('days-bar').innerHTML = grandDays.map((v,i) => `
+    <div class="day-card ${i===todayIdx?'today':''}">
+      <div>
+        <div class="day-label">${DAYS[i]}</div>
+        <div class="day-val">${v}</div>
+      </div>
+      <div style="width:4px;height:${Math.round((v/maxDay)*52)+4}px;
+        background:${i===todayIdx?'#1a56db':'#3b82f6'};
+        border-radius:2px;align-self:flex-end"></div>
+    </div>`).join('');
+
+  // Dashboard sheet → agents
+  const dashWs = wb.Sheets['Dashboard'];
+  agentsSorted = dashWs ? parseDashboard(dashWs) : [];
+  agentsSorted.sort((a,b) => b.grand - a.grand);
+  agentsSorted = agentsSorted.filter(a => a.grand > 0);
+
+  totalPages  = Math.max(1, Math.ceil(agentsSorted.length / agentsPerPage));
+  currentPage = 0;
+
+  buildHeader();
+  renderPage(0);
+  isPlaying = true;
+  startCycling();
+  wireControls();
+  wireTickerControls();
+
+  // Ticker
+  const ti = agentsSorted.slice(0,15)
+    .map(a => `<span class="ticker-item"><strong>${a.name}</strong> — ${a.grand} sales this week</span>`)
+    .join('');
+  document.getElementById('ticker').innerHTML = ti + ti;
+
+  // Show dashboard
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'flex';
+
+  startRefreshCountdown();
+}
+
+// ── File load ────────────────────────────────────────────────────────────────
+function loadFile(file) {
+  lastFile = file;
+  document.getElementById('file-label').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    buildDashboard(XLSX.read(new Uint8Array(e.target.result), { type:'array' }));
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Event listeners ──────────────────────────────────────────────────────────
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) { loadFile(e.target.files[0]); fileInput.value = ''; }
+});
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+dz.addEventListener('click', e => { if (e.target.tagName !== 'BUTTON') resetAndOpen(); });
+</script>
+</body>
+</html>
