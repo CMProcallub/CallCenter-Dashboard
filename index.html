@@ -498,12 +498,12 @@ function buildHeader() {
     <th rowspan="2" style="width:2.2rem">Rank</th>
     <th rowspan="2" style="text-align:left;padding-left:.55rem;width:130px">Agent</th>`;
   DEPTS.forEach((d,i) => {
-    r1 += `<th colspan="5" class="th-grp" style="color:var(${DEPT_VARS[i]})">
+    r1 += `<th colspan="6" class="th-grp" style="color:var(${DEPT_VARS[i]})">
       <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
         background:var(${DEPT_VARS[i]});margin-right:3px;vertical-align:middle"></span>${d}
     </th>`;
   });
-  r1 += `<th colspan="5" class="th-grp" style="color:var(--silver)">Daily Totals</th>`;
+  r1 += `<th colspan="6" class="th-grp" style="color:var(--silver)">Daily Totals</th>`;
   r1 += `<th rowspan="2" class="th-grp" style="color:var(--gold);width:3.2rem">Total</th>`;
   r1 += `</tr>`;
 
