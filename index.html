@@ -418,7 +418,7 @@ function parseSheet(ws) {
       dayTotals = [0,1,2,3,4].map(d => num(r[2+d]));
       deptTotal = num(r[11]) || dayTotals.reduce((a,b)=>a+b,0);
     }
-    if (r[1] === 'Last Week') lastWk = num(r[11]);
+    if (r[1] === 'Last Week') lastWk = num(r[9]);
   }
   return { deptTotal, dayTotals, lastWk };
 }
